@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { deleteTask, updateTaskStatus } from "@/lib/data-service";
 import EditTaskDialog from "./edit-task-dialog";
+import { useRouter } from "next/navigation";
 
 // Functie om prioriteit badge te renderen
 function PriorityBadge({ priority }) {
@@ -45,9 +46,10 @@ function PriorityBadge({ priority }) {
   );
 }
 
-export default function TaskCard({ task, customers }) {
+export default function TaskCard({ task, customers, allTags }) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const router = useRouter();
 
   // Functie om de datum te formatteren
   const formatDate = (dateString) => {
@@ -61,7 +63,7 @@ export default function TaskCard({ task, customers }) {
     if (window.confirm("Weet je zeker dat je deze taak wilt verwijderen?")) {
       try {
         await deleteTask(task.id);
-        window.location.reload();
+        router.refresh();
       } catch (error) {
         console.error("Error deleting task:", error);
         alert("Er is een fout opgetreden bij het verwijderen van de taak.");
@@ -76,9 +78,7 @@ export default function TaskCard({ task, customers }) {
     setIsUpdating(true);
     try {
       await updateTaskStatus(task.id, newStatus);
-      // Refresh the page to reflect the changes
-      // In a more complex app, you might update local state instead
-      window.location.reload();
+      router.refresh();
     } catch (error) {
       console.error("Error updating task status:", error);
       alert("Er is een fout opgetreden bij het bijwerken van de taakstatus.");
@@ -175,7 +175,7 @@ export default function TaskCard({ task, customers }) {
             <p className='text-sm text-slate-500 mb-3'>{task.description}</p>
           )}
 
-          <div className='flex flex-wrap gap-2 mb-3'>
+          <div className='flex flex-wrap gap-1.5 mb-3'>
             <PriorityBadge priority={task.priority} />
 
             {task.customer && (
@@ -201,6 +201,18 @@ export default function TaskCard({ task, customers }) {
                 Week {task.week_number}
               </Badge>
             )}
+
+            {task.tags &&
+              task.tags.length > 0 &&
+              task.tags.map((tag, index) => (
+                <Badge
+                  key={index}
+                  variant='outline'
+                  className='bg-cyan-100 text-cyan-800'
+                >
+                  {tag}
+                </Badge>
+              ))}
           </div>
         </CardContent>
 
@@ -211,6 +223,7 @@ export default function TaskCard({ task, customers }) {
       <EditTaskDialog
         task={task}
         customers={customers}
+        allTags={allTags}
         open={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
       />

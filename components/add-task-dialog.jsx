@@ -23,10 +23,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { PlusCircle } from "lucide-react";
 import { createTask } from "@/lib/data-service";
+import { useRouter } from "next/navigation";
+import { TagInput } from "./tag-input";
 
-export default function AddTaskDialog({ customers }) {
+export default function AddTaskDialog({ customers, allTags = [] }) {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -34,6 +37,7 @@ export default function AddTaskDialog({ customers }) {
     priority: "medium",
     due_date: "",
     week_number: "",
+    tags: [],
   });
 
   const handleChange = (e) => {
@@ -45,12 +49,22 @@ export default function AddTaskDialog({ customers }) {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleTagsChange = (newTags) => {
+    setFormData((prev) => ({ ...prev, tags: newTags }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
 
     const taskDataToSubmit = {
       ...formData,
+      customer_id:
+        formData.customer_id === "none" ? null : formData.customer_id,
+      week_number: formData.week_number
+        ? parseInt(formData.week_number, 10)
+        : null,
+      due_date: formData.due_date || null,
     };
 
     try {
@@ -63,10 +77,11 @@ export default function AddTaskDialog({ customers }) {
         priority: "medium",
         due_date: "",
         week_number: "",
+        tags: [],
       });
       setOpen(false);
 
-      window.location.reload();
+      router.refresh();
     } catch (error) {
       console.error("Error adding task:", error);
       alert("Er is een fout opgetreden bij het toevoegen van de taak.");
@@ -176,6 +191,17 @@ export default function AddTaskDialog({ customers }) {
                 value={formData.week_number}
                 onChange={handleChange}
                 placeholder='Bijv. 25'
+              />
+            </div>
+
+            <div className='space-y-2'>
+              <Label htmlFor='tags'>Tags</Label>
+              <TagInput
+                id='tags'
+                availableTags={allTags}
+                value={formData.tags || []}
+                onChange={handleTagsChange}
+                placeholder='Selecteer of maak tags...'
               />
             </div>
           </div>

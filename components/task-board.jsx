@@ -4,14 +4,17 @@ import { useState } from "react";
 import TaskCard from "@/components/task-card";
 import { updateTaskStatus } from "@/lib/data-service";
 import { ClipboardList, PlayCircle, CheckCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function TasksBoard({
   todoTasks,
   inProgressTasks,
   doneTasks,
   customers,
+  allTags,
 }) {
   const [isUpdating, setIsUpdating] = useState(false);
+  const router = useRouter();
 
   const handleStatusChange = async (taskId, newStatus) => {
     if (isUpdating) return;
@@ -19,9 +22,7 @@ export default function TasksBoard({
     setIsUpdating(true);
     try {
       await updateTaskStatus(taskId, newStatus);
-      // In een normaal geval zou je hier de state bijwerken
-      // Maar omdat dit een server component is, laden we de pagina opnieuw
-      window.location.reload();
+      router.refresh();
     } catch (error) {
       console.error("Error updating task status:", error);
       alert("Er is een fout opgetreden bij het bijwerken van de taakstatus.");
@@ -49,7 +50,7 @@ export default function TasksBoard({
                 key={task.id}
                 task={task}
                 customers={customers}
-                onStatusChange={handleStatusChange}
+                allTags={allTags}
               />
             ))
           ) : (
@@ -77,7 +78,7 @@ export default function TasksBoard({
                 key={task.id}
                 task={task}
                 customers={customers}
-                onStatusChange={handleStatusChange}
+                allTags={allTags}
               />
             ))
           ) : (
@@ -105,7 +106,7 @@ export default function TasksBoard({
                 key={task.id}
                 task={task}
                 customers={customers}
-                onStatusChange={handleStatusChange}
+                allTags={allTags}
               />
             ))
           ) : (

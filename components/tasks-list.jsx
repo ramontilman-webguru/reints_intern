@@ -28,6 +28,7 @@ export default function TasksList({ tasks, customers }) {
           <TableRow>
             <TableHead>Taak</TableHead>
             <TableHead>Klant</TableHead>
+            <TableHead>Tags</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Week</TableHead>
             <TableHead>Deadline</TableHead>
@@ -36,7 +37,7 @@ export default function TasksList({ tasks, customers }) {
         <TableBody>
           {tasks.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={5} className='h-24 text-center'>
+              <TableCell colSpan={6} className='h-24 text-center'>
                 Geen taken gevonden.
               </TableCell>
             </TableRow>
@@ -64,6 +65,23 @@ export default function TasksList({ tasks, customers }) {
                     ) : (
                       "N.v.t."
                     )}
+                  </TableCell>
+                  <TableCell>
+                    <div className='flex flex-wrap gap-1'>
+                      {task.tags && task.tags.length > 0 ? (
+                        task.tags.map((tag, index) => (
+                          <Badge
+                            key={index}
+                            variant='outline'
+                            className='bg-cyan-100 text-cyan-800 text-xs'
+                          >
+                            {tag}
+                          </Badge>
+                        ))
+                      ) : (
+                        <span>-</span>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell>
                     <Badge variant={statusInfo.variant}>

@@ -19,7 +19,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { updateTask } from "@/lib/data-service"; // Changed from createTask
+import { updateTask } from "@/lib/data-service";
+import { useRouter } from "next/navigation";
+import { TagInput } from "./tag-input";
 
 // Helper function to format date for input type='date'
 const formatDateForInput = (dateString) => {
@@ -36,22 +38,24 @@ const formatDateForInput = (dateString) => {
 export default function EditTaskDialog({
   task,
   customers,
+  allTags = [],
   open,
   onOpenChange,
 }) {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({});
+  const router = useRouter();
 
   useEffect(() => {
     if (task) {
       setFormData({
         title: task.title || "",
         description: task.description || "",
-        // Ensure customer_id is a string, handle null/undefined
         customer_id: task.customer_id ? String(task.customer_id) : "none",
         priority: task.priority || "medium",
         due_date: formatDateForInput(task.due_date),
         week_number: task.week_number || "",
+        tags: Array.isArray(task.tags) ? task.tags : [],
       });
     }
   }, [task]);
@@ -67,8 +71,12 @@ export default function EditTaskDialog({
   const handleSelectChange = (name, value) => {
     setFormData((prev) => ({
       ...prev,
-      [name]: value === "none" ? null : value, // Handle 'none' customer selection
+      [name]: value === "none" ? "none" : value,
     }));
+  };
+
+  const handleTagsChange = (newTags) => {
+    setFormData((prev) => ({ ...prev, tags: newTags }));
   };
 
   const handleSubmit = async (e) => {
@@ -76,23 +84,27 @@ export default function EditTaskDialog({
     if (!task) return;
     setIsLoading(true);
 
-    // Prepare data, ensure week_number is integer or null
     const taskDataToSubmit = {
-      ...formData,
+      title: formData.title,
+      description: formData.description,
+      customer_id:
+        formData.customer_id === "none" || !formData.customer_id
+          ? null
+          : formData.customer_id,
+      priority: formData.priority,
+      due_date: formData.due_date ? formData.due_date : null,
       week_number: formData.week_number
         ? parseInt(formData.week_number, 10)
         : null,
-      // Ensure customer_id is correctly formatted (null if 'none')
-      customer_id:
-        formData.customer_id === "none" ? null : formData.customer_id,
-      // Clear empty date field or keep it formatted
-      due_date: formData.due_date ? formData.due_date : null,
+      tags: formData.tags,
     };
+
+    console.log("Submitting Task Update:", taskDataToSubmit);
 
     try {
       await updateTask(task.id, taskDataToSubmit);
       onOpenChange(false);
-      window.location.reload(); // Or preferably update state
+      router.refresh();
     } catch (error) {
       console.error("Error updating task:", error);
       alert("Er is een fout opgetreden bij het bijwerken van de taak.");
@@ -101,9 +113,8 @@ export default function EditTaskDialog({
     }
   };
 
-  // If the dialog is controlled but no task is provided initially, don't render the form yet.
   if (!task && open) {
-    return null; // Or a loading state
+    return null;
   }
 
   return (
@@ -117,38 +128,37 @@ export default function EditTaskDialog({
             </DialogDescription>
           </DialogHeader>
           <div className='grid gap-4 py-4'>
-            {/* Title Field */}
             <div className='space-y-2'>
               <Label htmlFor='title'>Titel *</Label>
               <Input
                 id='title'
                 name='title'
-                value={formData.title || ""} // Ensure controlled component
+                value={formData.title || ""}
                 onChange={handleChange}
                 required
               />
             </div>
 
-            {/* Description Field */}
             <div className='space-y-2'>
               <Label htmlFor='description'>Beschrijving</Label>
               <Textarea
                 id='description'
                 name='description'
-                value={formData.description || ""} // Ensure controlled component
+                value={formData.description || ""}
                 onChange={handleChange}
                 className='min-h-[80px]'
               />
             </div>
 
-            {/* Customer Field */}
             <div className='space-y-2'>
               <Label htmlFor='customer_id'>Klant *</Label>
               <Select
                 onValueChange={(value) =>
                   handleSelectChange("customer_id", value)
                 }
-                value={formData.customer_id || "none"} // Default to 'none' if null/undefined
+                value={
+                  formData.customer_id ? String(formData.customer_id) : "none"
+                }
                 required
               >
                 <SelectTrigger>
@@ -166,12 +176,11 @@ export default function EditTaskDialog({
               </Select>
             </div>
 
-            {/* Priority Field */}
             <div className='space-y-2'>
               <Label htmlFor='priority'>Prioriteit</Label>
               <Select
                 onValueChange={(value) => handleSelectChange("priority", value)}
-                value={formData.priority || "medium"} // Default priority
+                value={formData.priority || "medium"}
               >
                 <SelectTrigger>
                   <SelectValue placeholder='Selecteer prioriteit' />
@@ -184,19 +193,17 @@ export default function EditTaskDialog({
               </Select>
             </div>
 
-            {/* Due Date Field */}
             <div className='space-y-2'>
               <Label htmlFor='due_date'>Vervaldatum</Label>
               <Input
                 id='due_date'
                 name='due_date'
                 type='date'
-                value={formData.due_date || ""} // Ensure controlled component
+                value={formData.due_date || ""}
                 onChange={handleChange}
               />
             </div>
 
-            {/* Week Number Field */}
             <div className='space-y-2'>
               <Label htmlFor='week_number'>Weeknummer</Label>
               <Input
@@ -205,9 +212,20 @@ export default function EditTaskDialog({
                 type='number'
                 min='1'
                 max='53'
-                value={formData.week_number || ""} // Ensure controlled component
+                value={formData.week_number || ""}
                 onChange={handleChange}
                 placeholder='Bijv. 25'
+              />
+            </div>
+
+            <div className='space-y-2'>
+              <Label htmlFor='tags'>Tags</Label>
+              <TagInput
+                id='tags'
+                availableTags={allTags}
+                value={formData.tags || []}
+                onChange={handleTagsChange}
+                placeholder='Selecteer of maak tags...'
               />
             </div>
           </div>
