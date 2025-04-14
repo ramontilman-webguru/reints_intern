@@ -8,6 +8,7 @@ import {
 import { Package, User, FileText, TrendingUp } from "lucide-react";
 import { getDashboardStats, getOrders } from "@/lib/data-service";
 import { Button } from "@/components/ui/button";
+import TodoCreator from "@/components/ai/TodoCreator";
 
 export default async function DashboardPage() {
   // Haal statistieken op
@@ -47,7 +48,7 @@ export default async function DashboardPage() {
         />
       </div>
 
-      <div className='grid gap-4 md:grid-cols-2'>
+      <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
         <Card>
           <CardHeader>
             <CardTitle>Recente Orders</CardTitle>
@@ -79,30 +80,15 @@ export default async function DashboardPage() {
             )}
           </CardContent>
         </Card>
-        <Card>
+        <Card className='lg:col-span-1'>
           <CardHeader>
-            <CardTitle>Snelle Acties</CardTitle>
-            <CardDescription>Veelgebruikte handelingen</CardDescription>
+            <CardTitle>AI To-Do Creator</CardTitle>
+            <CardDescription>
+              Create tasks using natural language
+            </CardDescription>
           </CardHeader>
-          <CardContent className='space-y-2'>
-            <div className='grid grid-cols-2 gap-2'>
-              <Button variant='outline' className='w-full justify-start'>
-                <FileText className='mr-2 h-4 w-4' />
-                Nieuwe Order
-              </Button>
-              <Button variant='outline' className='w-full justify-start'>
-                <User className='mr-2 h-4 w-4' />
-                Nieuwe Klant
-              </Button>
-              <Button variant='outline' className='w-full justify-start'>
-                <Package className='mr-2 h-4 w-4' />
-                Nieuw Product
-              </Button>
-              <Button variant='outline' className='w-full justify-start'>
-                <TrendingUp className='mr-2 h-4 w-4' />
-                Nieuwe Taak
-              </Button>
-            </div>
+          <CardContent>
+            <TodoCreator />
           </CardContent>
         </Card>
       </div>
