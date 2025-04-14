@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import { NextResponse } from "next/server";
-import { getCustomers, createTask } from "@/lib/data-service"; // Import Supabase functions
+import { createTask, createCustomer } from "@/lib/data-service";
+import { supabase } from "@/lib/supabase";
 
 // Initialize OpenAI client
 const openai = new OpenAI({
@@ -82,31 +83,63 @@ export async function POST(request) {
       );
     }
 
-    // --- Find Customer ID ---
+    // --- Find or Create Customer ID ---
     let customerId = null;
     if (aiData.bedrijfsnaam) {
+      const companyName = aiData.bedrijfsnaam;
       try {
-        const customers = await getCustomers(); // Fetch customers
-        const companyNameLower = aiData.bedrijfsnaam.toLowerCase();
-        // Simple exact match on company name (case-insensitive)
-        const foundCustomer = customers.find(
-          (c) => c.company?.toLowerCase() === companyNameLower
-        );
-        if (foundCustomer) {
-          customerId = foundCustomer.id;
+        // 1. Try to find existing customer by company name (case-insensitive)
+        const { data: existingCustomer, error: findError } = await supabase
+          .from("customers")
+          .select("id, company")
+          .ilike("company", companyName) // Case-insensitive search
+          .maybeSingle(); // Returns one record or null, doesn't error if not found
+
+        if (findError) {
+          console.error(`Error finding customer "${companyName}":`, findError);
+          // Decide how to handle this - proceed without customer_id?
+          throw findError; // For now, rethrow to stop processing
+        }
+
+        if (existingCustomer) {
+          // Customer found
+          customerId = existingCustomer.id;
           console.log(
-            `Found customer ID ${customerId} for company "${aiData.bedrijfsnaam}"`
+            `Found existing customer ID ${customerId} for company "${companyName}"`
           );
         } else {
+          // Customer not found, create new one
           console.log(
-            `No customer found matching company name "${aiData.bedrijfsnaam}"`
+            `No customer found for "${companyName}", attempting to create.`
           );
-          // Optional: Could add logic here to inform the user or create a placeholder?
+          try {
+            const newCustomer = await createCustomer(companyName); // Call the new function
+            if (newCustomer && newCustomer.id) {
+              customerId = newCustomer.id;
+              console.log(
+                `Successfully created new customer with ID ${customerId} for company "${companyName}"`
+              );
+            } else {
+              console.error(
+                `Failed to create customer or get ID for "${companyName}".`
+              );
+              // Proceed without customer ID or throw error?
+            }
+          } catch (createError) {
+            console.error(
+              `Error during customer creation for "${companyName}":`,
+              createError
+            );
+            // Decide how to handle - proceed without customer_id?
+            // For now, we'll proceed without customer ID if creation fails
+          }
         }
-      } catch (customerError) {
-        console.error("Error fetching customers:", customerError);
-        // Decide if we should proceed without customer or return an error
-        // For now, we'll proceed without linking the customer
+      } catch (customerLookupError) {
+        console.error(
+          `General error during customer lookup/creation for "${companyName}":`,
+          customerLookupError
+        );
+        // Proceed without customer ID
       }
     }
 
