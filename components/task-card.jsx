@@ -9,6 +9,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import {
   Calendar,
@@ -18,8 +19,10 @@ import {
   ArrowLeft,
   Trash2,
   Hash,
+  Pencil,
 } from "lucide-react";
 import { deleteTask, updateTaskStatus } from "@/lib/data-service";
+import EditTaskDialog from "./edit-task-dialog";
 
 // Functie om prioriteit badge te renderen
 function PriorityBadge({ priority }) {
@@ -42,8 +45,9 @@ function PriorityBadge({ priority }) {
   );
 }
 
-export default function TaskCard({ task }) {
+export default function TaskCard({ task, customers }) {
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   // Functie om de datum te formatteren
   const formatDate = (dateString) => {
@@ -139,58 +143,77 @@ export default function TaskCard({ task }) {
   };
 
   return (
-    <Card>
-      <CardContent className='p-4'>
-        <div className='flex justify-between items-start mb-2'>
-          <h4 className='font-medium'>{task.title}</h4>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant='ghost' size='icon' className='h-7 w-7'>
-                <MoreVertical className='h-4 w-4' />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align='end'>
-              <DropdownMenuItem onClick={handleDelete} className='text-red-600'>
-                <Trash2 className='h-4 w-4 mr-2' />
-                Verwijderen
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+    <>
+      <Card>
+        <CardContent className='p-4'>
+          <div className='flex justify-between items-start mb-2'>
+            <h4 className='font-medium'>{task.title}</h4>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant='ghost' size='icon' className='h-7 w-7'>
+                  <MoreVertical className='h-4 w-4' />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align='end'>
+                <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
+                  <Pencil className='h-4 w-4 mr-2' />
+                  Bewerken
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleDelete}
+                  className='text-red-600'
+                >
+                  <Trash2 className='h-4 w-4 mr-2' />
+                  Verwijderen
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
 
-        {task.description && (
-          <p className='text-sm text-slate-500 mb-3'>{task.description}</p>
-        )}
-
-        <div className='flex flex-wrap gap-2 mb-3'>
-          <PriorityBadge priority={task.priority} />
-
-          {task.customer && (
-            <Badge variant='outline' className='bg-slate-100 text-slate-800'>
-              <User className='h-3 w-3 mr-1' />
-              {task.customer.company || task.customer.name}
-            </Badge>
+          {task.description && (
+            <p className='text-sm text-slate-500 mb-3'>{task.description}</p>
           )}
 
-          {task.due_date && (
-            <Badge variant='outline' className='bg-purple-100 text-purple-800'>
-              <Calendar className='h-3 w-3 mr-1' />
-              {formatDate(task.due_date)}
-            </Badge>
-          )}
+          <div className='flex flex-wrap gap-2 mb-3'>
+            <PriorityBadge priority={task.priority} />
 
-          {task.week_number && (
-            <Badge variant='outline' className='bg-blue-100 text-blue-800'>
-              <Hash className='h-3 w-3 mr-1' />
-              Week {task.week_number}
-            </Badge>
-          )}
-        </div>
-      </CardContent>
+            {task.customer && (
+              <Badge variant='outline' className='bg-slate-100 text-slate-800'>
+                <User className='h-3 w-3 mr-1' />
+                {task.customer.company || task.customer.name}
+              </Badge>
+            )}
 
-      <CardFooter className='pt-0 px-4 pb-4 flex justify-between'>
-        {renderStatusActions()}
-      </CardFooter>
-    </Card>
+            {task.due_date && (
+              <Badge
+                variant='outline'
+                className='bg-purple-100 text-purple-800'
+              >
+                <Calendar className='h-3 w-3 mr-1' />
+                {formatDate(task.due_date)}
+              </Badge>
+            )}
+
+            {task.week_number && (
+              <Badge variant='outline' className='bg-blue-100 text-blue-800'>
+                <Hash className='h-3 w-3 mr-1' />
+                Week {task.week_number}
+              </Badge>
+            )}
+          </div>
+        </CardContent>
+
+        <CardFooter className='pt-0 px-4 pb-4 flex justify-between'>
+          {renderStatusActions()}
+        </CardFooter>
+      </Card>
+      <EditTaskDialog
+        task={task}
+        customers={customers}
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+      />
+    </>
   );
 }

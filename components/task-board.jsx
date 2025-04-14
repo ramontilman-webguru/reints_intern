@@ -5,7 +5,12 @@ import TaskCard from "@/components/task-card";
 import { updateTaskStatus } from "@/lib/data-service";
 import { ClipboardList, PlayCircle, CheckCircle } from "lucide-react";
 
-export default function TasksBoard({ todoTasks, inProgressTasks, doneTasks }) {
+export default function TasksBoard({
+  todoTasks,
+  inProgressTasks,
+  doneTasks,
+  customers,
+}) {
   const [isUpdating, setIsUpdating] = useState(false);
 
   const handleStatusChange = async (taskId, newStatus) => {
@@ -43,6 +48,7 @@ export default function TasksBoard({ todoTasks, inProgressTasks, doneTasks }) {
               <TaskCard
                 key={task.id}
                 task={task}
+                customers={customers}
                 onStatusChange={handleStatusChange}
               />
             ))
@@ -70,6 +76,7 @@ export default function TasksBoard({ todoTasks, inProgressTasks, doneTasks }) {
               <TaskCard
                 key={task.id}
                 task={task}
+                customers={customers}
                 onStatusChange={handleStatusChange}
               />
             ))
@@ -97,6 +104,7 @@ export default function TasksBoard({ todoTasks, inProgressTasks, doneTasks }) {
               <TaskCard
                 key={task.id}
                 task={task}
+                customers={customers}
                 onStatusChange={handleStatusChange}
               />
             ))
