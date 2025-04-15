@@ -10,6 +10,7 @@ import { getDashboardStats, getOrders } from "@/lib/data-service";
 import { Button } from "@/components/ui/button";
 import TodoCreator from "@/components/ai/TodoCreator";
 import QuickNoteForm from "@/components/quick-note-form";
+import Link from "next/link";
 
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../api/auth/[...nextauth]/route"; // Import authOptions
@@ -40,30 +41,46 @@ export default async function DashboardPage() {
       </h2>
 
       <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
-        <StatsCard
-          title='Producten'
-          value={stats.productCount.toString()}
-          description='Actieve producten'
-          icon={<Package className='h-5 w-5 text-muted-foreground' />}
-        />
-        <StatsCard
-          title='Klanten'
-          value={stats.customerCount.toString()}
-          description='Actieve klanten'
-          icon={<User className='h-5 w-5 text-muted-foreground' />}
-        />
-        <StatsCard
-          title='Open Orders'
-          value={stats.openOrderCount.toString()}
-          description='In behandeling'
-          icon={<FileText className='h-5 w-5 text-muted-foreground' />}
-        />
-        <StatsCard
-          title='Te doen'
-          value={stats.openTaskCount.toString()}
-          description='Openstaande taken'
-          icon={<TrendingUp className='h-5 w-5 text-muted-foreground' />}
-        />
+        <Link href='/dashboard/products' legacyBehavior passHref>
+          <a className='block cursor-pointer'>
+            <StatsCard
+              title='Producten'
+              value={stats.productCount.toString()}
+              description='Actieve producten'
+              icon={<Package className='h-5 w-5 text-muted-foreground' />}
+            />
+          </a>
+        </Link>
+        <Link href='/dashboard/customers' legacyBehavior passHref>
+          <a className='block cursor-pointer'>
+            <StatsCard
+              title='Klanten'
+              value={stats.customerCount.toString()}
+              description='Actieve klanten'
+              icon={<User className='h-5 w-5 text-muted-foreground' />}
+            />
+          </a>
+        </Link>
+        <Link href='/dashboard/orders' legacyBehavior passHref>
+          <a className='block cursor-pointer'>
+            <StatsCard
+              title='Open Orders'
+              value={stats.openOrderCount.toString()}
+              description='In behandeling'
+              icon={<FileText className='h-5 w-5 text-muted-foreground' />}
+            />
+          </a>
+        </Link>
+        <Link href='/dashboard/tasks' legacyBehavior passHref>
+          <a className='block cursor-pointer'>
+            <StatsCard
+              title='Te doen'
+              value={stats.openTaskCount.toString()}
+              description='Openstaande taken'
+              icon={<TrendingUp className='h-5 w-5 text-muted-foreground' />}
+            />
+          </a>
+        </Link>
       </div>
 
       <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
