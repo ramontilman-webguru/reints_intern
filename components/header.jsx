@@ -1,3 +1,5 @@
+"use client";
+
 import { Menu, Bell, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,8 +10,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { signOut } from "next-auth/react";
 
 export default function Header() {
+  const handleLogout = () => {
+    signOut({ callbackUrl: "/login" });
+  };
+
   return (
     <header className='bg-white border-b border-slate-200 sticky top-0 z-10'>
       <div className='px-4 sm:px-6 lg:px-8'>
@@ -42,7 +49,12 @@ export default function Header() {
                 <DropdownMenuItem>Profiel</DropdownMenuItem>
                 <DropdownMenuItem>Instellingen</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Uitloggen</DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  className='cursor-pointer'
+                >
+                  Uitloggen
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

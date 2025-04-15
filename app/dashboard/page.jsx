@@ -11,7 +11,24 @@ import { Button } from "@/components/ui/button";
 import TodoCreator from "@/components/ai/TodoCreator";
 import QuickNoteForm from "@/components/quick-note-form";
 
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "../api/auth/[...nextauth]/route"; // Import authOptions
+
 export default async function DashboardPage() {
+  // Fetch session data server-side
+  const session = await getServerSession(authOptions);
+
+  // Helper function to capitalize the first letter
+  const capitalize = (s) =>
+    s && s.length > 0 ? s.charAt(0).toUpperCase() + s.slice(1) : "";
+
+  // Determine welcome message
+  const userName = session?.user?.name;
+  const capitalizedUserName = capitalize(userName);
+  const welcomeMessage = capitalizedUserName
+    ? `Welkom ${capitalizedUserName}`
+    : "Welkom!"; // Fallback if no name
+
   // Haal statistieken op
   const stats = await getDashboardStats();
   const recentOrders = await getOrders();
@@ -19,7 +36,7 @@ export default async function DashboardPage() {
   return (
     <div className='space-y-6'>
       <h2 className='text-3xl font-bold tracking-tight'>
-        Welkom bij Reints Office
+        {welcomeMessage} {/* Display personalized message */}
       </h2>
 
       <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
