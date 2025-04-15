@@ -5,7 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Package, User, FileText, TrendingUp } from "lucide-react";
+import { Package, User, FileText, TrendingUp, StickyNote } from "lucide-react";
 import { getDashboardStats, getOrders } from "@/lib/data-service";
 import { Button } from "@/components/ui/button";
 import TodoCreator from "@/components/ai/TodoCreator";
@@ -40,46 +40,46 @@ export default async function DashboardPage() {
         {welcomeMessage} {/* Display personalized message */}
       </h2>
 
-      <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
-        <Link href='/dashboard/products' legacyBehavior passHref>
-          <a className='block cursor-pointer'>
-            <StatsCard
-              title='Producten'
-              value={stats.productCount.toString()}
-              description='Actieve producten'
-              icon={<Package className='h-5 w-5 text-muted-foreground' />}
-            />
-          </a>
+      <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-5'>
+        <Link href='/dashboard/products' className='block cursor-pointer'>
+          <StatsCard
+            title='Producten'
+            value={stats.productCount.toString()}
+            description='Actieve producten'
+            icon={<Package className='h-5 w-5 text-muted-foreground' />}
+          />
         </Link>
-        <Link href='/dashboard/customers' legacyBehavior passHref>
-          <a className='block cursor-pointer'>
-            <StatsCard
-              title='Klanten'
-              value={stats.customerCount.toString()}
-              description='Actieve klanten'
-              icon={<User className='h-5 w-5 text-muted-foreground' />}
-            />
-          </a>
+        <Link href='/dashboard/customers' className='block cursor-pointer'>
+          <StatsCard
+            title='Klanten'
+            value={stats.customerCount.toString()}
+            description='Actieve klanten'
+            icon={<User className='h-5 w-5 text-muted-foreground' />}
+          />
         </Link>
-        <Link href='/dashboard/orders' legacyBehavior passHref>
-          <a className='block cursor-pointer'>
-            <StatsCard
-              title='Open Orders'
-              value={stats.openOrderCount.toString()}
-              description='In behandeling'
-              icon={<FileText className='h-5 w-5 text-muted-foreground' />}
-            />
-          </a>
+        <Link href='/dashboard/orders' className='block cursor-pointer'>
+          <StatsCard
+            title='Open Orders'
+            value={stats.openOrderCount.toString()}
+            description='In behandeling'
+            icon={<FileText className='h-5 w-5 text-muted-foreground' />}
+          />
         </Link>
-        <Link href='/dashboard/tasks' legacyBehavior passHref>
-          <a className='block cursor-pointer'>
-            <StatsCard
-              title='Te doen'
-              value={stats.openTaskCount.toString()}
-              description='Openstaande taken'
-              icon={<TrendingUp className='h-5 w-5 text-muted-foreground' />}
-            />
-          </a>
+        <Link href='/dashboard/tasks' className='block cursor-pointer'>
+          <StatsCard
+            title='Te doen'
+            value={stats.openTaskCount.toString()}
+            description='Openstaande taken'
+            icon={<TrendingUp className='h-5 w-5 text-muted-foreground' />}
+          />
+        </Link>
+        <Link href='/dashboard/notes' className='block cursor-pointer'>
+          <StatsCard
+            title='Notities'
+            value={stats.noteCount.toString()}
+            description='Totaal aantal notities'
+            icon={<StickyNote className='h-5 w-5 text-muted-foreground' />}
+          />
         </Link>
       </div>
 

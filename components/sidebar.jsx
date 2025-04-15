@@ -9,6 +9,7 @@ import {
   Settings,
   List,
   X,
+  StickyNote,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
@@ -127,6 +128,8 @@ function getIcon(name) {
       return <List className='w-5 h-5' />;
     case "customers":
       return <Users className='w-5 h-5' />;
+    case "notes":
+      return <StickyNote className='w-5 h-5' />;
     default:
       return null;
   }

@@ -13,6 +13,7 @@ const navigation = [
   { name: "Products", href: "/dashboard/products", current: false },
   { name: "Orders", href: "/dashboard/orders", current: false }, // Representing quotes/orders/invoices
   { name: "Tasks", href: "/dashboard/tasks", current: false },
+  { name: "Notes", href: "/dashboard/notes", current: false },
 ];
 
 export default function DashboardLayout({ children }) {
