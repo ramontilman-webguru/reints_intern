@@ -203,6 +203,15 @@ export default function CustomerNotes({ customerId }) {
     setIsDetailDialogOpen(true);
   };
 
+  // Handler for the edit action from the detail dialog
+  const handleEditFromDetail = (note) => {
+    setIsDetailDialogOpen(false); // Close detail dialog
+    // Small delay to allow detail dialog to close before opening edit
+    setTimeout(() => {
+      handleEditClick(note); // Reuse existing edit click handler
+    }, 100); // Adjust delay if needed
+  };
+
   return (
     <AlertDialog>
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
@@ -393,6 +402,7 @@ export default function CustomerNotes({ customerId }) {
         note={viewingNote}
         isOpen={isDetailDialogOpen}
         onClose={() => setIsDetailDialogOpen(false)}
+        onEdit={handleEditFromDetail}
       />
     </AlertDialog>
   );

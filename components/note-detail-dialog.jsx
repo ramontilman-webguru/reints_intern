@@ -11,9 +11,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
+import { Edit } from "lucide-react";
 
-export default function NoteDetailDialog({ note, isOpen, onClose }) {
+export default function NoteDetailDialog({ note, isOpen, onClose, onEdit }) {
   if (!note) return null; // Don't render if no note is selected
+
+  const handleEditClick = () => {
+    if (onEdit) {
+      onEdit(note);
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -58,7 +65,10 @@ export default function NoteDetailDialog({ note, isOpen, onClose }) {
           {/* If viewing from customer page, customerId is available, could link back */}
           {/* We might need to adjust data fetching/passing if customer name isn't always present */}
         </div>
-        <DialogFooter>
+        <DialogFooter className='sm:justify-between'>
+          <Button variant='outline' onClick={handleEditClick}>
+            <Edit className='mr-2 h-4 w-4' /> Bewerken
+          </Button>
           <DialogClose asChild>
             <Button type='button' variant='outline'>
               Sluiten

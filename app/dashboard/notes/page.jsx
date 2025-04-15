@@ -84,6 +84,13 @@ export default function NotesPage() {
     setIsDetailDialogOpen(true);
   };
 
+  const handleEditFromDetail = (note) => {
+    setIsDetailDialogOpen(false);
+    setTimeout(() => {
+      setEditingNote(note);
+    }, 100);
+  };
+
   const filteredNotes = notes.filter((note) => {
     const lowerSearchTerm = searchTerm.toLowerCase();
     return (
@@ -230,6 +237,7 @@ export default function NotesPage() {
         note={viewingNote}
         isOpen={isDetailDialogOpen}
         onClose={() => setIsDetailDialogOpen(false)}
+        onEdit={handleEditFromDetail}
       />
     </div>
   );
