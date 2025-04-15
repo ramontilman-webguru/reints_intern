@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { signOut } from "next-auth/react";
 
-export default function Header() {
+export default function Header({ setSidebarOpen }) {
   const handleLogout = () => {
     signOut({ callbackUrl: "/login" });
   };
@@ -23,7 +23,12 @@ export default function Header() {
         <div className='flex justify-between h-16'>
           <div className='flex'>
             <div className='flex-shrink-0 flex items-center md:hidden'>
-              <Button variant='ghost' size='icon' aria-label='Open sidebar'>
+              <Button
+                variant='ghost'
+                size='icon'
+                aria-label='Open sidebar'
+                onClick={() => setSidebarOpen(true)}
+              >
                 <Menu className='h-6 w-6' />
               </Button>
             </div>
