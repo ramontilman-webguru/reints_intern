@@ -3,11 +3,11 @@ import { NextResponse } from "next/server";
 
 export async function POST(request, context) {
   const { customerId } = context.params;
-  const { note_text, location, note_title } = await request.json();
+  const { note_text, location, note_title, user_id } = await request.json();
 
-  if (!note_text || !note_title) {
+  if (!note_text || !note_title || !user_id) {
     return NextResponse.json(
-      { error: "Note title and text are required" },
+      { error: "Note title, text, and user ID are required" },
       { status: 400 }
     );
   }
@@ -35,6 +35,7 @@ export async function POST(request, context) {
         note_text: note_text,
         location: location,
         note_title: note_title,
+        user_id: user_id,
       },
     ])
     .select()
@@ -43,7 +44,7 @@ export async function POST(request, context) {
   if (error) {
     console.error("Error creating note:", error);
     return NextResponse.json(
-      { error: "Failed to create note" },
+      { error: "Failed to create note", details: error.message },
       { status: 500 }
     );
   }

@@ -26,6 +26,7 @@ import CreateNoteDialog from "@/components/create-note-dialog";
 import EditNoteDialog from "@/components/edit-note-dialog";
 import DeleteNoteDialog from "@/components/delete-note-dialog";
 import NoteDetailDialog from "@/components/note-detail-dialog";
+import { getUserNameById } from "@/lib/users";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function NotesPage() {
@@ -93,11 +94,13 @@ export default function NotesPage() {
 
   const filteredNotes = notes.filter((note) => {
     const lowerSearchTerm = searchTerm.toLowerCase();
+    const userName = getUserNameById(note.user_id).toLowerCase();
     return (
       note.note_title?.toLowerCase().includes(lowerSearchTerm) ||
       note.note_text?.toLowerCase().includes(lowerSearchTerm) ||
       note.location?.toLowerCase().includes(lowerSearchTerm) ||
-      note.customer_name?.toLowerCase().includes(lowerSearchTerm)
+      note.customer_name?.toLowerCase().includes(lowerSearchTerm) ||
+      userName.includes(lowerSearchTerm)
     );
   });
 
@@ -118,10 +121,10 @@ export default function NotesPage() {
           </CardDescription>
           <div className='mt-4'>
             <Input
-              placeholder='Zoek notities...'
+              placeholder='Zoek notities (titel, tekst, locatie, klant, auteur)...'
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className='max-w-sm'
+              className='max-w-md'
             />
           </div>
         </CardHeader>
@@ -130,11 +133,12 @@ export default function NotesPage() {
             <div className='space-y-3'>
               {[...Array(5)].map((_, i) => (
                 <div key={i} className='flex items-center space-x-4 p-2'>
-                  <Skeleton className='h-8 w-[200px]' />
-                  <Skeleton className='h-8 w-[100px]' />
-                  <Skeleton className='h-8 w-[150px]' />
-                  <Skeleton className='h-8 w-[150px]' />
-                  <Skeleton className='h-8 w-[80px] ml-auto' />
+                  <Skeleton className='h-8 w-[25%]' />
+                  <Skeleton className='h-8 w-[15%]' />
+                  <Skeleton className='h-8 w-[20%]' />
+                  <Skeleton className='h-8 w-[15%]' />
+                  <Skeleton className='h-8 w-[15%]' />
+                  <Skeleton className='h-8 w-[calc(10%-32px)] ml-auto' />
                 </div>
               ))}
             </div>
@@ -148,11 +152,12 @@ export default function NotesPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className='w-[30%]'>Titel</TableHead>
-                  <TableHead>Locatie</TableHead>
-                  <TableHead>Klant</TableHead>
-                  <TableHead>Datum</TableHead>
-                  <TableHead className='text-right'>Acties</TableHead>
+                  <TableHead className='w-[25%]'>Titel</TableHead>
+                  <TableHead className='w-[15%]'>Locatie</TableHead>
+                  <TableHead className='w-[20%]'>Klant</TableHead>
+                  <TableHead className='w-[15%]'>Auteur</TableHead>
+                  <TableHead className='w-[15%]'>Datum</TableHead>
+                  <TableHead className='w-[10%] text-right'>Acties</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -173,6 +178,7 @@ export default function NotesPage() {
                     </TableCell>
                     <TableCell>{note.location || "-"}</TableCell>
                     <TableCell>{note.customer_name}</TableCell>
+                    <TableCell>{getUserNameById(note.user_id)}</TableCell>
                     <TableCell>
                       {format(new Date(note.created_at), "P p", { locale: nl })}
                     </TableCell>
@@ -234,7 +240,14 @@ export default function NotesPage() {
       />
 
       <NoteDetailDialog
-        note={viewingNote}
+        note={
+          viewingNote
+            ? {
+                ...viewingNote,
+                user_name: getUserNameById(viewingNote.user_id),
+              }
+            : null
+        }
         isOpen={isDetailDialogOpen}
         onClose={() => setIsDetailDialogOpen(false)}
         onEdit={handleEditFromDetail}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useSession } from "next-auth/react"; // Import useSession
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -35,6 +36,7 @@ import {
 import { toast } from "sonner"; // Assuming you use sonner for toasts
 import { Trash2, Edit } from "lucide-react"; // Icons for buttons
 import NoteDetailDialog from "./note-detail-dialog"; // Import the new dialog
+import { getUserNameById } from "@/lib/users"; // Import helper
 
 // Helper function to truncate text
 const truncateText = (text, maxLength) => {
@@ -46,6 +48,9 @@ const truncateText = (text, maxLength) => {
 };
 
 export default function CustomerNotes({ customerId }) {
+  const { data: session } = useSession(); // Get session data
+  const currentUserId = session?.user?.id; // Extract user ID
+
   const [notes, setNotes] = useState([]);
   const [newNote, setNewNote] = useState("");
   const [newNoteTitle, setNewNoteTitle] = useState("");
@@ -90,7 +95,16 @@ export default function CustomerNotes({ customerId }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!newNoteTitle.trim() || !newNote.trim() || isSubmitting) return;
+    if (
+      !newNoteTitle.trim() ||
+      !newNote.trim() ||
+      !currentUserId ||
+      isSubmitting
+    ) {
+      if (!currentUserId)
+        toast.error("Gebruiker niet gevonden. Log opnieuw in.");
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -103,6 +117,7 @@ export default function CustomerNotes({ customerId }) {
           note_title: newNoteTitle,
           note_text: newNote,
           location: newLocation,
+          user_id: currentUserId, // Include current user ID
         }),
       });
 
@@ -229,7 +244,7 @@ export default function CustomerNotes({ customerId }) {
                 placeholder='Notitie Titel'
                 value={newNoteTitle}
                 onChange={(e) => setNewNoteTitle(e.target.value)}
-                disabled={isSubmitting}
+                disabled={!currentUserId || isSubmitting} // Disable if no user
                 required
               />
               <Textarea
@@ -237,23 +252,31 @@ export default function CustomerNotes({ customerId }) {
                 value={newNote}
                 onChange={(e) => setNewNote(e.target.value)}
                 rows={3}
-                disabled={isSubmitting}
+                disabled={!currentUserId || isSubmitting} // Disable if no user
                 required
               />
               <Input
                 placeholder='Locatie (optioneel)'
                 value={newLocation}
                 onChange={(e) => setNewLocation(e.target.value)}
-                disabled={isSubmitting}
+                disabled={!currentUserId || isSubmitting} // Disable if no user
               />
               <Button
                 type='submit'
                 disabled={
-                  !newNoteTitle.trim() || !newNote.trim() || isSubmitting
+                  !newNoteTitle.trim() ||
+                  !newNote.trim() ||
+                  !currentUserId ||
+                  isSubmitting
                 }
               >
                 {isSubmitting ? "Toevoegen..." : "Nieuwe Notitie Opslaan"}
               </Button>
+              {!currentUserId && (
+                <p className='text-xs text-destructive'>
+                  Log in om een notitie toe te voegen.
+                </p>
+              )}
             </form>
 
             <Separator className='my-6' />
@@ -294,6 +317,9 @@ export default function CustomerNotes({ customerId }) {
                             dateStyle: "short",
                             timeStyle: "short",
                           })}
+                        </p>
+                        <p className='text-xs text-muted-foreground mb-1'>
+                          Door: {getUserNameById(note.user_id)}
                         </p>
                       </div>
                       <div className='flex flex-col space-y-1 ml-2'>
@@ -399,7 +425,14 @@ export default function CustomerNotes({ customerId }) {
       </AlertDialogContent>
 
       <NoteDetailDialog
-        note={viewingNote}
+        note={
+          viewingNote
+            ? {
+                ...viewingNote,
+                user_name: getUserNameById(viewingNote.user_id),
+              }
+            : null
+        }
         isOpen={isDetailDialogOpen}
         onClose={() => setIsDetailDialogOpen(false)}
         onEdit={handleEditFromDetail}

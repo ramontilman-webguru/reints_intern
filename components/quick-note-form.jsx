@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -22,6 +23,9 @@ import { getCustomers } from "@/lib/data-service"; // Assuming this fetches all 
 import { toast } from "sonner";
 
 export default function QuickNoteForm() {
+  const { data: session } = useSession();
+  const currentUserId = session?.user?.id;
+
   const [customers, setCustomers] = useState([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState("");
   const [noteTitle, setNoteTitle] = useState("");
@@ -53,9 +57,13 @@ export default function QuickNoteForm() {
       !selectedCustomerId ||
       !noteTitle.trim() ||
       !noteText.trim() ||
+      !currentUserId ||
       isSubmitting
     ) {
-      toast.warning("Selecteer een klant en voer een titel en notitie in.");
+      if (!currentUserId)
+        toast.error("Gebruiker niet gevonden. Log opnieuw in.");
+      else
+        toast.warning("Selecteer een klant en voer een titel en notitie in.");
       return;
     }
 
@@ -72,6 +80,7 @@ export default function QuickNoteForm() {
             note_title: noteTitle,
             note_text: noteText,
             location: location,
+            user_id: currentUserId,
           }),
         }
       );
@@ -107,13 +116,15 @@ export default function QuickNoteForm() {
           <Select
             value={selectedCustomerId}
             onValueChange={setSelectedCustomerId}
-            disabled={isLoadingCustomers || isSubmitting}
+            disabled={isLoadingCustomers || !currentUserId || isSubmitting}
           >
             <SelectTrigger>
               <SelectValue
                 placeholder={
                   isLoadingCustomers
                     ? "Klanten laden..."
+                    : !currentUserId
+                    ? "Log in om klant te selecteren"
                     : "Selecteer een klant"
                 }
               />
@@ -139,7 +150,7 @@ export default function QuickNoteForm() {
             placeholder='Notitie Titel'
             value={noteTitle}
             onChange={(e) => setNoteTitle(e.target.value)}
-            disabled={isSubmitting}
+            disabled={!currentUserId || isSubmitting}
             required
           />
 
@@ -147,7 +158,7 @@ export default function QuickNoteForm() {
             placeholder='Locatie (optioneel)'
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            disabled={isSubmitting}
+            disabled={!currentUserId || isSubmitting}
           />
 
           <Textarea
@@ -155,7 +166,7 @@ export default function QuickNoteForm() {
             value={noteText}
             onChange={(e) => setNoteText(e.target.value)}
             rows={3}
-            disabled={isSubmitting}
+            disabled={!currentUserId || isSubmitting}
             required
           />
 
@@ -165,12 +176,18 @@ export default function QuickNoteForm() {
               !selectedCustomerId ||
               !noteTitle.trim() ||
               !noteText.trim() ||
+              !currentUserId ||
               isSubmitting
             }
             className='w-full'
           >
             {isSubmitting ? "Toevoegen..." : "Notitie Opslaan"}
           </Button>
+          {!currentUserId && (
+            <p className='text-xs text-destructive text-center'>
+              Log in om een notitie toe te voegen.
+            </p>
+          )}
         </form>
       </CardContent>
     </Card>

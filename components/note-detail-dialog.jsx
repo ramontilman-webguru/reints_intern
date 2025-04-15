@@ -53,7 +53,16 @@ export default function NoteDetailDialog({ note, isOpen, onClose, onEdit }) {
               {format(new Date(note.created_at), "PPPp", { locale: nl })}
             </p>
           </div>
-          {/* Optionally add Customer Name if available */}
+          {/* Display Author (User Name) */}
+          {note.user_name && (
+            <div>
+              <h4 className='text-sm font-semibold mb-1 text-muted-foreground'>
+                Auteur:
+              </h4>
+              <p className='text-sm'>{note.user_name}</p>
+            </div>
+          )}
+          {/* Display Customer Name (if available) */}
           {note.customer_name && (
             <div>
               <h4 className='text-sm font-semibold mb-1 text-muted-foreground'>

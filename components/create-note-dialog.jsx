@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react"; // Import useSession
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -23,6 +24,9 @@ import { getCustomers } from "@/lib/data-service"; // To fetch customers
 import { toast } from "sonner";
 
 export default function CreateNoteDialog({ isOpen, onClose, onSuccess }) {
+  const { data: session } = useSession(); // Get session data
+  const currentUserId = session?.user?.id; // Extract user ID
+
   const [customers, setCustomers] = useState([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState("");
   const [noteTitle, setNoteTitle] = useState("");
@@ -66,9 +70,13 @@ export default function CreateNoteDialog({ isOpen, onClose, onSuccess }) {
       !selectedCustomerId ||
       !noteTitle.trim() ||
       !noteText.trim() ||
+      !currentUserId || // Check for user ID
       isSubmitting
     ) {
-      toast.warning("Selecteer een klant en voer een titel en notitie in.");
+      if (!currentUserId)
+        toast.error("Gebruiker niet gevonden. Log opnieuw in.");
+      else
+        toast.warning("Selecteer een klant en voer een titel en notitie in.");
       return;
     }
 
@@ -85,6 +93,7 @@ export default function CreateNoteDialog({ isOpen, onClose, onSuccess }) {
             note_title: noteTitle,
             note_text: noteText,
             location: location,
+            user_id: currentUserId, // Include current user ID
           }),
         }
       );
@@ -123,13 +132,15 @@ export default function CreateNoteDialog({ isOpen, onClose, onSuccess }) {
           <Select
             value={selectedCustomerId}
             onValueChange={setSelectedCustomerId}
-            disabled={isLoadingCustomers || isSubmitting}
+            disabled={isLoadingCustomers || !currentUserId || isSubmitting} // Disable if no user
           >
             <SelectTrigger>
               <SelectValue
                 placeholder={
                   isLoadingCustomers
                     ? "Klanten laden..."
+                    : !currentUserId
+                    ? "Log in om klant te selecteren"
                     : "Selecteer een klant"
                 }
               />
@@ -155,7 +166,7 @@ export default function CreateNoteDialog({ isOpen, onClose, onSuccess }) {
             placeholder='Notitie Titel'
             value={noteTitle}
             onChange={(e) => setNoteTitle(e.target.value)}
-            disabled={isSubmitting}
+            disabled={!currentUserId || isSubmitting} // Disable if no user
             required
           />
 
@@ -163,7 +174,7 @@ export default function CreateNoteDialog({ isOpen, onClose, onSuccess }) {
             placeholder='Locatie (optioneel)'
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            disabled={isSubmitting}
+            disabled={!currentUserId || isSubmitting} // Disable if no user
           />
 
           <Textarea
@@ -171,7 +182,7 @@ export default function CreateNoteDialog({ isOpen, onClose, onSuccess }) {
             value={noteText}
             onChange={(e) => setNoteText(e.target.value)}
             rows={4}
-            disabled={isSubmitting}
+            disabled={!currentUserId || isSubmitting} // Disable if no user
             required
           />
 
@@ -187,11 +198,17 @@ export default function CreateNoteDialog({ isOpen, onClose, onSuccess }) {
                 !selectedCustomerId ||
                 !noteTitle.trim() ||
                 !noteText.trim() ||
+                !currentUserId || // Check user ID
                 isSubmitting
               }
             >
               {isSubmitting ? "Toevoegen..." : "Notitie Toevoegen"}
             </Button>
+            {!currentUserId && (
+              <p className='text-xs text-destructive mt-2 sm:mt-0 sm:ml-auto'>
+                Log in om op te slaan.
+              </p>
+            )}
           </DialogFooter>
         </form>
       </DialogContent>
