@@ -1,11 +1,21 @@
 import Sidebar from "@/components/sidebar";
 import Header from "@/components/header";
 
+// Assuming Sidebar accepts a navigation prop or similar
+// We'll need to update the Sidebar component itself later
+const navigation = [
+  { name: "Dashboard", href: "/dashboard", current: false },
+  { name: "Customers", href: "/dashboard/customers", current: false },
+  { name: "Tasks", href: "/dashboard/tasks", current: false },
+  { name: "Products", href: "/dashboard/products", current: false },
+  { name: "Orders", href: "/dashboard/orders", current: false }, // Representing quotes/orders/invoices
+];
+
 export default function DashboardLayout({ children }) {
   return (
     <div className='flex h-screen overflow-hidden'>
       {/* Sidebar */}
-      <Sidebar className='flex-shrink-0' />
+      <Sidebar navigation={navigation} className='flex-shrink-0' />
 
       {/* Main Content */}
       <div className='flex flex-col flex-1 overflow-hidden md:pl-64'>

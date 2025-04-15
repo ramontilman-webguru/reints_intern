@@ -11,6 +11,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Mail, Phone, MapPin } from "lucide-react";
 import TaskCard from "@/components/task-card"; // Reuse TaskCard for consistency
+import CustomerNotes from "@/components/customer-notes"; // Import the new component
 
 export default async function CustomerDetailPage({ params }) {
   const customerId = params.customerId;
@@ -138,6 +139,9 @@ export default async function CustomerDetailPage({ params }) {
           </Card>
         </div>
       </div>
+
+      {/* Add the CustomerNotes component here */}
+      <CustomerNotes customerId={customerId} />
     </div>
   );
 }

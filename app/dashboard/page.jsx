@@ -9,6 +9,7 @@ import { Package, User, FileText, TrendingUp } from "lucide-react";
 import { getDashboardStats, getOrders } from "@/lib/data-service";
 import { Button } from "@/components/ui/button";
 import TodoCreator from "@/components/ai/TodoCreator";
+import QuickNoteForm from "@/components/quick-note-form";
 
 export default async function DashboardPage() {
   // Haal statistieken op
@@ -49,6 +50,8 @@ export default async function DashboardPage() {
       </div>
 
       <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
+        <QuickNoteForm />
+
         <Card>
           <CardHeader>
             <CardTitle>Recente Orders</CardTitle>
