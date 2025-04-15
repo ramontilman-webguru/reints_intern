@@ -1,0 +1,16 @@
+{
+  "name": "Reints Dashboard",
+  "short_name": "Reints",
+  "description": "Internal dashboard for Reints Office",
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#FFA500"
+}
