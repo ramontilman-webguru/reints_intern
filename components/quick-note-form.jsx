@@ -24,6 +24,7 @@ import { toast } from "sonner";
 export default function QuickNoteForm() {
   const [customers, setCustomers] = useState([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState("");
+  const [noteTitle, setNoteTitle] = useState("");
   const [noteText, setNoteText] = useState("");
   const [location, setLocation] = useState("");
   const [isLoadingCustomers, setIsLoadingCustomers] = useState(true);
@@ -48,8 +49,13 @@ export default function QuickNoteForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!selectedCustomerId || !noteText.trim() || isSubmitting) {
-      toast.warning("Selecteer een klant en voer een notitie in.");
+    if (
+      !selectedCustomerId ||
+      !noteTitle.trim() ||
+      !noteText.trim() ||
+      isSubmitting
+    ) {
+      toast.warning("Selecteer een klant en voer een titel en notitie in.");
       return;
     }
 
@@ -63,6 +69,7 @@ export default function QuickNoteForm() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
+            note_title: noteTitle,
             note_text: noteText,
             location: location,
           }),
@@ -74,9 +81,10 @@ export default function QuickNoteForm() {
         throw new Error(errorData.error || "Failed to add quick note");
       }
 
+      setNoteTitle("");
       setNoteText("");
       setLocation("");
-      setSelectedCustomerId(""); // Optionally reset customer selection
+      setSelectedCustomerId("");
       toast.success("Snelle notitie toegevoegd.");
     } catch (error) {
       console.error("Error adding quick note:", error);
@@ -128,6 +136,14 @@ export default function QuickNoteForm() {
           </Select>
 
           <Input
+            placeholder='Notitie Titel'
+            value={noteTitle}
+            onChange={(e) => setNoteTitle(e.target.value)}
+            disabled={isSubmitting}
+            required
+          />
+
+          <Input
             placeholder='Locatie (optioneel)'
             value={location}
             onChange={(e) => setLocation(e.target.value)}
@@ -138,13 +154,19 @@ export default function QuickNoteForm() {
             placeholder='Typ hier je notitie...'
             value={noteText}
             onChange={(e) => setNoteText(e.target.value)}
-            rows={3} // Slightly smaller than the dedicated notes component
+            rows={3}
             disabled={isSubmitting}
+            required
           />
 
           <Button
             type='submit'
-            disabled={!selectedCustomerId || !noteText.trim() || isSubmitting}
+            disabled={
+              !selectedCustomerId ||
+              !noteTitle.trim() ||
+              !noteText.trim() ||
+              isSubmitting
+            }
             className='w-full'
           >
             {isSubmitting ? "Toevoegen..." : "Notitie Opslaan"}

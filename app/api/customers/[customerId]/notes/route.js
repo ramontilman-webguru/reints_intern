@@ -3,11 +3,11 @@ import { NextResponse } from "next/server";
 
 export async function POST(request, context) {
   const { customerId } = context.params;
-  const { note_text, location } = await request.json();
+  const { note_text, location, note_title } = await request.json();
 
-  if (!note_text) {
+  if (!note_text || !note_title) {
     return NextResponse.json(
-      { error: "Note text is required" },
+      { error: "Note title and text are required" },
       { status: 400 }
     );
   }
@@ -30,7 +30,12 @@ export async function POST(request, context) {
   const { data, error } = await supabase
     .from("customer_notes") // Assuming your notes table is named 'customer_notes'
     .insert([
-      { customer_id: customerId, note_text: note_text, location: location },
+      {
+        customer_id: customerId,
+        note_text: note_text,
+        location: location,
+        note_title: note_title,
+      },
     ])
     .select()
     .single();

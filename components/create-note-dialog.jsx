@@ -25,6 +25,7 @@ import { toast } from "sonner";
 export default function CreateNoteDialog({ isOpen, onClose, onSuccess }) {
   const [customers, setCustomers] = useState([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState("");
+  const [noteTitle, setNoteTitle] = useState("");
   const [noteText, setNoteText] = useState("");
   const [location, setLocation] = useState("");
   const [isLoadingCustomers, setIsLoadingCustomers] = useState(true);
@@ -52,6 +53,7 @@ export default function CreateNoteDialog({ isOpen, onClose, onSuccess }) {
 
   const resetForm = () => {
     setSelectedCustomerId("");
+    setNoteTitle("");
     setNoteText("");
     setLocation("");
     setIsSubmitting(false);
@@ -60,8 +62,13 @@ export default function CreateNoteDialog({ isOpen, onClose, onSuccess }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!selectedCustomerId || !noteText.trim() || isSubmitting) {
-      toast.warning("Selecteer een klant en voer een notitie in.");
+    if (
+      !selectedCustomerId ||
+      !noteTitle.trim() ||
+      !noteText.trim() ||
+      isSubmitting
+    ) {
+      toast.warning("Selecteer een klant en voer een titel en notitie in.");
       return;
     }
 
@@ -75,6 +82,7 @@ export default function CreateNoteDialog({ isOpen, onClose, onSuccess }) {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
+            note_title: noteTitle,
             note_text: noteText,
             location: location,
           }),
@@ -144,6 +152,14 @@ export default function CreateNoteDialog({ isOpen, onClose, onSuccess }) {
           </Select>
 
           <Input
+            placeholder='Notitie Titel'
+            value={noteTitle}
+            onChange={(e) => setNoteTitle(e.target.value)}
+            disabled={isSubmitting}
+            required
+          />
+
+          <Input
             placeholder='Locatie (optioneel)'
             value={location}
             onChange={(e) => setLocation(e.target.value)}
@@ -156,19 +172,25 @@ export default function CreateNoteDialog({ isOpen, onClose, onSuccess }) {
             onChange={(e) => setNoteText(e.target.value)}
             rows={4}
             disabled={isSubmitting}
+            required
           />
 
           <DialogFooter>
             <DialogClose asChild>
-              <Button type='button' variant='outline' disabled={isSubmitting}>
+              <Button type='button' variant='outline'>
                 Annuleren
               </Button>
             </DialogClose>
             <Button
               type='submit'
-              disabled={!selectedCustomerId || !noteText.trim() || isSubmitting}
+              disabled={
+                !selectedCustomerId ||
+                !noteTitle.trim() ||
+                !noteText.trim() ||
+                isSubmitting
+              }
             >
-              {isSubmitting ? "Toevoegen..." : "Notitie Opslaan"}
+              {isSubmitting ? "Toevoegen..." : "Notitie Toevoegen"}
             </Button>
           </DialogFooter>
         </form>

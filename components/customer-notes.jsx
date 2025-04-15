@@ -18,7 +18,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
@@ -35,6 +34,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner"; // Assuming you use sonner for toasts
 import { Trash2, Edit } from "lucide-react"; // Icons for buttons
+import NoteDetailDialog from "./note-detail-dialog"; // Import the new dialog
 
 // Helper function to truncate text
 const truncateText = (text, maxLength) => {
@@ -48,6 +48,7 @@ const truncateText = (text, maxLength) => {
 export default function CustomerNotes({ customerId }) {
   const [notes, setNotes] = useState([]);
   const [newNote, setNewNote] = useState("");
+  const [newNoteTitle, setNewNoteTitle] = useState("");
   const [newLocation, setNewLocation] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -55,10 +56,15 @@ export default function CustomerNotes({ customerId }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingNote, setEditingNote] = useState(null);
   const [editText, setEditText] = useState("");
+  const [editNoteTitle, setEditNoteTitle] = useState("");
   const [editLocation, setEditLocation] = useState("");
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [deletingNoteId, setDeletingNoteId] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // State for viewing note details
+  const [viewingNote, setViewingNote] = useState(null);
+  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
 
   const fetchNotes = useCallback(async () => {
     if (!customerId) return;
@@ -84,7 +90,7 @@ export default function CustomerNotes({ customerId }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!newNote.trim() || isSubmitting) return;
+    if (!newNoteTitle.trim() || !newNote.trim() || isSubmitting) return;
 
     setIsSubmitting(true);
     try {
@@ -94,6 +100,7 @@ export default function CustomerNotes({ customerId }) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          note_title: newNoteTitle,
           note_text: newNote,
           location: newLocation,
         }),
@@ -105,6 +112,7 @@ export default function CustomerNotes({ customerId }) {
       }
 
       await fetchNotes();
+      setNewNoteTitle("");
       setNewNote("");
       setNewLocation("");
       toast.success("Notitie toegevoegd.");
@@ -118,13 +126,14 @@ export default function CustomerNotes({ customerId }) {
 
   const handleEditClick = (note) => {
     setEditingNote(note);
+    setEditNoteTitle(note.note_title || "");
     setEditText(note.note_text || "");
     setEditLocation(note.location || "");
     setIsEditDialogOpen(true);
   };
 
   const handleUpdateNote = async () => {
-    if (!editingNote || !editText.trim()) return;
+    if (!editingNote || !editNoteTitle.trim() || !editText.trim()) return;
     setIsSubmitting(true);
 
     try {
@@ -136,6 +145,7 @@ export default function CustomerNotes({ customerId }) {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
+            note_title: editNoteTitle,
             note_text: editText,
             location: editLocation,
           }),
@@ -187,6 +197,12 @@ export default function CustomerNotes({ customerId }) {
     }
   };
 
+  // Handler to open the detail view
+  const handleViewClick = (note) => {
+    setViewingNote(note);
+    setIsDetailDialogOpen(true);
+  };
+
   return (
     <AlertDialog>
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
@@ -200,12 +216,20 @@ export default function CustomerNotes({ customerId }) {
           <CardContent>
             <form onSubmit={handleSubmit} className='space-y-4 mb-6'>
               <h4 className='text-md font-medium'>Nieuwe Notitie Toevoegen</h4>
+              <Input
+                placeholder='Notitie Titel'
+                value={newNoteTitle}
+                onChange={(e) => setNewNoteTitle(e.target.value)}
+                disabled={isSubmitting}
+                required
+              />
               <Textarea
                 placeholder='Typ hier je nieuwe notitie...'
                 value={newNote}
                 onChange={(e) => setNewNote(e.target.value)}
                 rows={3}
                 disabled={isSubmitting}
+                required
               />
               <Input
                 placeholder='Locatie (optioneel)'
@@ -213,10 +237,13 @@ export default function CustomerNotes({ customerId }) {
                 onChange={(e) => setNewLocation(e.target.value)}
                 disabled={isSubmitting}
               />
-              <Button type='submit' disabled={!newNote.trim() || isSubmitting}>
-                {isSubmitting && !editingNote
-                  ? "Toevoegen..."
-                  : "Nieuwe Notitie Opslaan"}
+              <Button
+                type='submit'
+                disabled={
+                  !newNoteTitle.trim() || !newNote.trim() || isSubmitting
+                }
+              >
+                {isSubmitting ? "Toevoegen..." : "Nieuwe Notitie Opslaan"}
               </Button>
             </form>
 
@@ -233,9 +260,20 @@ export default function CustomerNotes({ customerId }) {
                       key={note.id}
                       className='p-3 border rounded-md bg-muted/50 flex justify-between items-start'
                     >
-                      <div className='flex-1 mr-2'>
-                        <p className='text-sm whitespace-pre-wrap mb-1'>
-                          {truncateText(note.note_text, 150)}
+                      <div
+                        className='flex-1 mr-2 cursor-pointer hover:bg-muted/80 rounded p-1 -m-1'
+                        onClick={() => handleViewClick(note)}
+                        role='button'
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            handleViewClick(note);
+                          }
+                        }}
+                      >
+                        <p className='font-medium mb-1'>{note.note_title}</p>
+                        <p className='text-sm text-muted-foreground whitespace-pre-wrap mb-1'>
+                          {truncateText(note.note_text, 100)}
                         </p>
                         {note.location && (
                           <p className='text-xs text-muted-foreground mb-1'>
@@ -249,12 +287,13 @@ export default function CustomerNotes({ customerId }) {
                           })}
                         </p>
                       </div>
-                      <div className='flex flex-col space-y-1'>
+                      <div className='flex flex-col space-y-1 ml-2'>
                         <Button
                           variant='outline'
                           size='icon'
                           onClick={() => handleEditClick(note)}
                           className='h-7 w-7'
+                          aria-label='Bewerk notitie'
                         >
                           <Edit className='h-4 w-4' />
                         </Button>
@@ -264,6 +303,7 @@ export default function CustomerNotes({ customerId }) {
                             size='icon'
                             onClick={() => setDeletingNoteId(note.id)}
                             className='h-7 w-7'
+                            aria-label='Verwijder notitie'
                           >
                             <Trash2 className='h-4 w-4' />
                           </Button>
@@ -286,12 +326,20 @@ export default function CustomerNotes({ customerId }) {
             <DialogTitle>Notitie Bewerken</DialogTitle>
           </DialogHeader>
           <div className='space-y-4 py-4'>
+            <Input
+              placeholder='Notitie Titel'
+              value={editNoteTitle}
+              onChange={(e) => setEditNoteTitle(e.target.value)}
+              disabled={isSubmitting}
+              required
+            />
             <Textarea
               placeholder='Notitie tekst...'
               value={editText}
               onChange={(e) => setEditText(e.target.value)}
               rows={6}
               disabled={isSubmitting}
+              required
             />
             <Input
               placeholder='Locatie (optioneel)'
@@ -309,7 +357,9 @@ export default function CustomerNotes({ customerId }) {
             <Button
               type='button'
               onClick={handleUpdateNote}
-              disabled={!editText.trim() || isSubmitting}
+              disabled={
+                !editNoteTitle.trim() || !editText.trim() || isSubmitting
+              }
             >
               {isSubmitting ? "Opslaan..." : "Wijzigingen Opslaan"}
             </Button>
@@ -338,6 +388,12 @@ export default function CustomerNotes({ customerId }) {
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
+
+      <NoteDetailDialog
+        note={viewingNote}
+        isOpen={isDetailDialogOpen}
+        onClose={() => setIsDetailDialogOpen(false)}
+      />
     </AlertDialog>
   );
 }

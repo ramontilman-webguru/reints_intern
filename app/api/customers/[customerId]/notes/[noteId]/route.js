@@ -32,15 +32,15 @@ export async function DELETE(request, context) {
 // Handler to UPDATE (PUT) a specific note
 export async function PUT(request, context) {
   const { noteId } = context.params;
-  const { note_text, location } = await request.json();
+  const { note_text, location, note_title } = await request.json();
 
   if (!noteId) {
     return NextResponse.json({ error: "Note ID is required" }, { status: 400 });
   }
 
-  if (!note_text) {
+  if (!note_text || !note_title) {
     return NextResponse.json(
-      { error: "Note text is required" },
+      { error: "Note title and text are required" },
       { status: 400 }
     );
   }
@@ -49,11 +49,12 @@ export async function PUT(request, context) {
     .from("customer_notes")
     .update({
       note_text: note_text,
-      location: location, // Update location as well
+      location: location,
+      note_title: note_title,
     })
     .eq("id", noteId)
-    .select() // Select the updated row
-    .single(); // Expecting a single row back
+    .select()
+    .single();
 
   if (error) {
     console.error("Error updating note:", error);

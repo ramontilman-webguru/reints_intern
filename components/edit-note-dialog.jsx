@@ -15,28 +15,29 @@ import {
 import { toast } from "sonner";
 
 export default function EditNoteDialog({ note, isOpen, onClose, onSuccess }) {
+  const [editNoteTitle, setEditNoteTitle] = useState("");
   const [editText, setEditText] = useState("");
   const [editLocation, setEditLocation] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (note) {
+      setEditNoteTitle(note.note_title || "");
       setEditText(note.note_text || "");
       setEditLocation(note.location || "");
     } else {
-      // Reset form when dialog closes or note changes
+      setEditNoteTitle("");
       setEditText("");
       setEditLocation("");
     }
   }, [note]);
 
   const handleUpdateNote = async () => {
-    if (!note || !editText.trim()) return;
+    if (!note || !editNoteTitle.trim() || !editText.trim()) return;
     setIsSubmitting(true);
 
     try {
       const response = await fetch(
-        // Use the generic note update endpoint
         `/api/customers/${note.customer_id}/notes/${note.id}`,
         {
           method: "PUT",
@@ -44,6 +45,7 @@ export default function EditNoteDialog({ note, isOpen, onClose, onSuccess }) {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
+            note_title: editNoteTitle,
             note_text: editText,
             location: editLocation,
           }),
@@ -55,7 +57,7 @@ export default function EditNoteDialog({ note, isOpen, onClose, onSuccess }) {
         throw new Error(errorData.error || "Failed to update note");
       }
 
-      onSuccess(); // Call the success callback passed from the parent
+      onSuccess();
     } catch (error) {
       console.error("Error updating note:", error);
       toast.error(`Kon notitie niet bijwerken: ${error.message}`);
@@ -64,10 +66,9 @@ export default function EditNoteDialog({ note, isOpen, onClose, onSuccess }) {
     }
   };
 
-  // Handle dialog open state based on isOpen prop
   const handleOpenChange = (open) => {
     if (!open) {
-      onClose(); // Call onClose when dialog is dismissed
+      onClose();
     }
   };
 
@@ -78,12 +79,20 @@ export default function EditNoteDialog({ note, isOpen, onClose, onSuccess }) {
           <DialogTitle>Notitie Bewerken</DialogTitle>
         </DialogHeader>
         <div className='space-y-4 py-4'>
+          <Input
+            placeholder='Notitie Titel'
+            value={editNoteTitle}
+            onChange={(e) => setEditNoteTitle(e.target.value)}
+            disabled={isSubmitting}
+            required
+          />
           <Textarea
             placeholder='Notitie tekst...'
             value={editText}
             onChange={(e) => setEditText(e.target.value)}
             rows={6}
             disabled={isSubmitting}
+            required
           />
           <Input
             placeholder='Locatie (optioneel)'
@@ -101,7 +110,7 @@ export default function EditNoteDialog({ note, isOpen, onClose, onSuccess }) {
           <Button
             type='button'
             onClick={handleUpdateNote}
-            disabled={!editText.trim() || isSubmitting}
+            disabled={!editNoteTitle.trim() || !editText.trim() || isSubmitting}
           >
             {isSubmitting ? "Opslaan..." : "Wijzigingen Opslaan"}
           </Button>
