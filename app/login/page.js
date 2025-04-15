@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -56,22 +57,31 @@ export default function LoginPage() {
   };
 
   return (
-    <div className='flex items-center justify-center min-h-screen bg-background'>
+    <div className='flex flex-col items-center justify-center min-h-screen bg-background'>
+      <Image
+        src='/logo.svg'
+        alt='Company Logo'
+        width={250}
+        height={60} // Maintain aspect ratio (approx 1103/284)
+        className='mb-6' // Add some margin below the logo
+        priority // Prioritize loading the logo
+      />
       <Card className='w-full max-w-sm'>
         <CardHeader>
           <CardTitle className='text-2xl'>Login</CardTitle>
           <CardDescription>
-            Enter your username and password to access your account.
+            Vul je gebruikersnaam en wachtwoord in om je in te loggen op de
+            Reints Office Dashboard.
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className='grid gap-4'>
             <div className='grid gap-2'>
-              <Label htmlFor='username'>Username</Label>
+              <Label htmlFor='username'>Gebruikersnaam</Label>
               <Input
                 id='username'
                 type='text'
-                placeholder='Your username'
+                placeholder='Gebruikersnaam'
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
@@ -79,11 +89,11 @@ export default function LoginPage() {
               />
             </div>
             <div className='grid gap-2'>
-              <Label htmlFor='password'>Password</Label>
+              <Label htmlFor='password'>Wachtwoord</Label>
               <Input
                 id='password'
                 type='password'
-                placeholder='Your password'
+                placeholder='Wachtwoord'
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -93,7 +103,11 @@ export default function LoginPage() {
             {error && <p className='text-sm text-red-600'>{error}</p>}
           </CardContent>
           <CardFooter>
-            <Button className='w-full' type='submit' disabled={isLoading}>
+            <Button
+              className='w-full bg-reints text-white hover:bg-reints/90 mt-4'
+              type='submit'
+              disabled={isLoading}
+            >
               {isLoading ? "Logging in..." : "Login"}
             </Button>
           </CardFooter>
